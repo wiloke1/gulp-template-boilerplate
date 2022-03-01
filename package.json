@@ -12,6 +12,7 @@
     "browser-sync": "^2.27.7",
     "cross-env": "^7.0.3",
     "fs-extra": "^10.0.1",
+    "glob": "^7.2.0",
     "gulp": "^4.0.2",
     "gulp-sass": "^5.1.0",
     "gulp-sass-glob": "^1.1.0",

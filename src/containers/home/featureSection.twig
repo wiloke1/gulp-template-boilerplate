@@ -1,11 +1,14 @@
-{% extends "../../shared/blocks/section/section.twig" %}
+{% import "../../shared/textBox/textBox.twig" as textBox %}
 
-{% block section %}
+<section class="section">
   <div class="container">
+    <h1>Feature section</h1>
     <div class="row">
-      <div class="col-xs-12">
-        <h1>Feature section</h1>
-      </div>
+      {% for item in featureSection %}
+        <div class="col-xs-12 col-sm-6 col-md-4">
+          {{ textBox.render({ title: item.title, text: item.text }) }}
+        </div>
+      {% endfor %}
     </div>
   </div>
-{% endblock %}
+</section>

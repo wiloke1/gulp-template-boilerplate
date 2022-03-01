@@ -1,0 +1,7 @@
+{% macro render(opts = { text: "Button" }) %}
+  {% if opts.href %}
+    <a href="{{ opts.href }}" class="button">{{ opts.text }}</a>
+  {% else %}
+    <button class="button">{{ opts.text }}</button>
+  {% endif %}
+{% endmacro %}

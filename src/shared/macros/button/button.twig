@@ -1,7 +1,0 @@
-{% macro render(props = { text: "Button" }) %}
-  {% if props.href %}
-    <a href="{{ props.href }}" class="button">{{ props.text }}</a>
-  {% else %}
-    <button class="button">{{ props.text }}</button>
-  {% endif %}
-{% endmacro %}

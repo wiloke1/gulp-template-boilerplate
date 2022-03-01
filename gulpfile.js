@@ -5,6 +5,7 @@ const sourcemaps = require("gulp-sourcemaps");
 const sassGlob = require("gulp-sass-glob");
 const fs = require("fs-extra");
 const twig = require("gulp-twig");
+const glob = require("glob");
 
 const isDev = process.env.NODE_ENV === "development";
 const config = {
@@ -51,6 +52,24 @@ function compileScss(cb) {
 }
 
 /**
+ * It reads all the JSON files in the input directory and returns a dictionary of the contents of those
+ * files
+ * @returns A JavaScript object with the contents of each JSON file in the input directory.
+ */
+function getJSON() {
+  const files = glob.sync(`${config.input}/**/*.json`);
+  const contents = files.reduce((obj, file) => {
+    const fileName = file.replace(/.*\/|\.json/g, "");
+    const content = JSON.parse(fs.readFileSync(file).toString());
+    return {
+      ...obj,
+      [fileName]: content,
+    };
+  }, {});
+  return contents;
+}
+
+/**
  * Compiles all the HTML files in the src directory and puts them in the build directory
  * @param cb - A callback function that runs after the task has completed.
  */
@@ -58,7 +77,7 @@ function compileTwig(cb) {
   try {
     gulp
       .src(`${config.input}/*.twig`)
-      .pipe(twig({ errorLogToConsole: true }))
+      .pipe(twig({ data: getJSON(), errorLogToConsole: true }))
       .pipe(gulp.dest(isDev ? config.output.dev : config.output.prod));
   } catch (err) {
     console.log(err);
