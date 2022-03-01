@@ -1,0 +1,13 @@
+{% extends "./abstracts/layout.twig" %}
+
+{% block body %}
+
+  {% import "./shared/macros/button/button.twig" as button %}
+
+  <h1>Hello world</h1>
+  {{button.render({ text: 'Click me' })}}
+  {{button.render({ text: 'Click link', href: "#" })}}
+
+  {% include "./containers/home/featureSection.twig" %}
+
+{% endblock %}

@@ -15,5 +15,11 @@
     "source.fixAll.eslint": true,
     "source.fixAll": true
   },
-  "scss.scannerExclude": ["**/.git"]
+  "scss.scannerExclude": ["**/.git"],
+  "files.associations": {
+    "*.html": "twig"
+  },
+  "emmet.includeLanguages": {
+      "twig": "html"
+  },
 }

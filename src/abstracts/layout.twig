@@ -6,9 +6,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="styles/styles.css">
   <script defer src="js/scripts.js"></script>
-  <title>Document</title>
+  <title>{% block title %}Title{% endblock %}</title>
 </head>
 <body>
-  <h1>Hello world</h1>
+  <div id="root">
+    {% block header %}
+      <header>Header</header>
+    {% endblock %}
+
+    {% block body %}{% endblock %}
+
+    {% block footer %}
+      <footer>Footer</footer>
+    {% endblock %}
+  </div>
 </body>
 </html>

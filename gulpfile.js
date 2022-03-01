@@ -4,6 +4,7 @@ const browserSync = require("browser-sync").create();
 const sourcemaps = require("gulp-sourcemaps");
 const sassGlob = require("gulp-sass-glob");
 const fs = require("fs-extra");
+const twig = require("gulp-twig");
 
 const isDev = process.env.NODE_ENV === "development";
 const config = {
@@ -12,6 +13,7 @@ const config = {
   styles: "styles",
   img: "img",
   js: "js",
+  shared: "shared",
   output: {
     dev: "dev",
     prod: "build",
@@ -25,7 +27,10 @@ const config = {
 function compileScss(cb) {
   if (isDev) {
     gulp
-      .src(`${config.input}/${config.styles}/*.scss`)
+      .src([
+        `${config.input}/${config.styles}/*.scss`,
+        `${config.input}/${config.shared}/*.scss`,
+      ])
       .pipe(sourcemaps.init())
       .pipe(sassGlob())
       .pipe(sass())
@@ -34,7 +39,10 @@ function compileScss(cb) {
       .pipe(browserSync.stream());
   }
   gulp
-    .src(`${config.input}/${config.styles}/*.scss`)
+    .src([
+      `${config.input}/${config.styles}/*.scss`,
+      `${config.input}/${config.shared}/*.scss`,
+    ])
     .pipe(sassGlob())
     .pipe(sass().on("error", sass.logError))
     .pipe(gulp.dest(`${config.output.prod}/${config.styles}`))
@@ -46,10 +54,15 @@ function compileScss(cb) {
  * Compiles all the HTML files in the src directory and puts them in the build directory
  * @param cb - A callback function that runs after the task has completed.
  */
-function compileHtml(cb) {
-  gulp
-    .src(`${config.input}/*.html`)
-    .pipe(gulp.dest(isDev ? config.output.dev : config.output.prod));
+function compileTwig(cb) {
+  try {
+    gulp
+      .src(`${config.input}/*.twig`)
+      .pipe(twig({ errorLogToConsole: true }))
+      .pipe(gulp.dest(isDev ? config.output.dev : config.output.prod));
+  } catch (err) {
+    console.log(err);
+  }
   cb();
 }
 
@@ -92,13 +105,19 @@ function copyImages(cb) {
  */
 function watchFiles() {
   try {
-    gulp.watch(`${config.input}/${config.styles}/**/*.scss`, compileScss);
+    gulp.watch(
+      [
+        `${config.input}/${config.styles}/**/*.scss`,
+        `${config.input}/${config.shared}/**/*.scss`,
+      ],
+      compileScss
+    );
     gulp.watch(`${config.input}/${config.img}/**/*`, copyImages);
     gulp
       .watch(`${config.input}/${config.js}/**/*`, compileJs)
       .on("change", browserSync.reload);
     gulp
-      .watch(`${config.input}/*.html`, compileHtml)
+      .watch(`${config.input}/**/*.twig`, compileTwig)
       .on("change", browserSync.reload);
   } catch (err) {
     console.log(err);
@@ -129,7 +148,7 @@ function handleBrowserSync(cb) {
  *
  * handleBrowserSync
  * compileScss
- * compileHtml
+ * compileTwig
  * copyImages
  * @returns The dev task is returning the handleBrowserSync function, which is being returned from the
  * gulp.series function.
@@ -138,7 +157,7 @@ function dev() {
   fs.removeSync(config.output.dev);
   return gulp.series(
     handleBrowserSync,
-    gulp.parallel(compileScss, compileHtml, compileJs, copyImages)
+    gulp.parallel(compileScss, compileTwig, compileJs, copyImages)
   );
 }
 
@@ -152,7 +171,7 @@ function dev() {
  */
 function build() {
   fs.removeSync(config.output.prod);
-  return gulp.parallel(compileScss, compileHtml, compileJs, copyImages);
+  return gulp.parallel(compileScss, compileTwig, compileJs, copyImages);
 }
 
 gulp.task("dev", dev());
