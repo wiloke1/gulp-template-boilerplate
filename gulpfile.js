@@ -3,14 +3,15 @@ const sass = require("gulp-sass")(require("sass"));
 const browserSync = require("browser-sync").create();
 const sourcemaps = require("gulp-sourcemaps");
 const sassGlob = require("gulp-sass-glob");
+const fs = require("fs-extra");
 
 const isDev = process.env.NODE_ENV === "development";
 const config = {
   port: 3000,
   input: "src",
-  styles: "/styles",
-  img: "/img",
-  js: "/js",
+  styles: "styles",
+  img: "img",
+  js: "js",
   output: {
     dev: "dev",
     prod: "build",
@@ -134,9 +135,10 @@ function handleBrowserSync(cb) {
  * gulp.series function.
  */
 function dev() {
+  fs.removeSync(config.output.dev);
   return gulp.series(
     handleBrowserSync,
-    gulp.parallel(compileScss, compileHtml, copyImages)
+    gulp.parallel(compileScss, compileHtml, compileJs, copyImages)
   );
 }
 
@@ -149,7 +151,8 @@ function dev() {
  * @returns The build function returns a gulp.parallel task.
  */
 function build() {
-  return gulp.parallel(compileScss, compileHtml, copyImages);
+  fs.removeSync(config.output.prod);
+  return gulp.parallel(compileScss, compileHtml, compileJs, copyImages);
 }
 
 gulp.task("dev", dev());
