@@ -8,8 +8,7 @@ const isDev = process.env.NODE_ENV === "development";
 const config = {
   port: 3000,
   input: "src",
-  scss: "/scss",
-  css: "/css",
+  styles: "/styles",
   img: "/img",
   js: "/js",
   output: {
@@ -25,19 +24,19 @@ const config = {
 function compileScss(cb) {
   if (isDev) {
     gulp
-      .src(`${config.input}/${config.scss}/*.scss`)
+      .src(`${config.input}/${config.styles}/*.scss`)
       .pipe(sourcemaps.init())
       .pipe(sassGlob())
       .pipe(sass())
       .pipe(sourcemaps.write())
-      .pipe(gulp.dest(`${config.output.dev}/${config.css}`))
+      .pipe(gulp.dest(`${config.output.dev}/${config.styles}`))
       .pipe(browserSync.stream());
   }
   gulp
-    .src(`${config.input}/${config.scss}/*.scss`)
+    .src(`${config.input}/${config.styles}/*.scss`)
     .pipe(sassGlob())
     .pipe(sass().on("error", sass.logError))
-    .pipe(gulp.dest(`${config.output.prod}/${config.css}`))
+    .pipe(gulp.dest(`${config.output.prod}/${config.styles}`))
     .pipe(browserSync.stream());
   cb();
 }
@@ -92,7 +91,7 @@ function copyImages(cb) {
  */
 function watchFiles() {
   try {
-    gulp.watch(`${config.input}/${config.scss}/**/*.scss`, compileScss);
+    gulp.watch(`${config.input}/${config.styles}/**/*.scss`, compileScss);
     gulp.watch(`${config.input}/${config.img}/**/*`, copyImages);
     gulp
       .watch(`${config.input}/${config.js}/**/*`, compileJs)
