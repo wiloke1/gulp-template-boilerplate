@@ -6,6 +6,9 @@ const sassGlob = require("gulp-sass-glob");
 const fs = require("fs-extra");
 const twig = require("gulp-twig");
 const glob = require("glob");
+const { getTwig } = require("./gulp/getTwig");
+const { liquidSyntaxToTwig } = require("./gulp/LiquidSyntaxToTwig");
+const watch = require("node-watch");
 
 const isDev = process.env.NODE_ENV === "development";
 const config = {
@@ -60,13 +63,28 @@ function getJSON() {
   const files = glob.sync(`${config.input}/**/*.json`);
   const contents = files.reduce((obj, file) => {
     const fileName = file.replace(/.*\/|\.json/g, "");
-    const content = JSON.parse(fs.readFileSync(file).toString());
+    const content = JSON.parse(fs.readFileSync(file).toString() || "{}");
     return {
       ...obj,
       [fileName]: content,
     };
   }, {});
   return contents;
+}
+
+function compileLiquidToTwig() {
+  watch(config.input, { recursive: true }, function (evt, file) {
+    if (file.includes(".liquid")) {
+      const twigFileName = file.replace(/\.liquid/g, ".twig");
+      let content = fs.readFileSync(file).toString();
+      content = getTwig("id", content, {});
+      content = liquidSyntaxToTwig({
+        liquid: content,
+        settings: [],
+      });
+      fs.writeFileSync(twigFileName, content);
+    }
+  });
 }
 
 /**
@@ -138,6 +156,9 @@ function watchFiles() {
     gulp
       .watch(`${config.input}/**/*.twig`, compileTwig)
       .on("change", browserSync.reload);
+    gulp
+      .watch(`${config.input}/**/*.json`, compileTwig)
+      .on("change", browserSync.reload);
   } catch (err) {
     console.log(err);
   }
@@ -176,7 +197,13 @@ function dev() {
   fs.removeSync(config.output.dev);
   return gulp.series(
     handleBrowserSync,
-    gulp.parallel(compileScss, compileTwig, compileJs, copyImages)
+    gulp.parallel(
+      compileScss,
+      compileLiquidToTwig,
+      compileTwig,
+      compileJs,
+      copyImages
+    )
   );
 }
 
@@ -190,7 +217,13 @@ function dev() {
  */
 function build() {
   fs.removeSync(config.output.prod);
-  return gulp.parallel(compileScss, compileTwig, compileJs, copyImages);
+  return gulp.parallel(
+    compileScss,
+    compileLiquidToTwig,
+    compileTwig,
+    compileJs,
+    copyImages
+  );
 }
 
 gulp.task("dev", dev());
