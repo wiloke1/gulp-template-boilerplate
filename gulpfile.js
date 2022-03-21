@@ -9,6 +9,7 @@ const glob = require("glob");
 const { getTwig } = require("./gulp/getTwig");
 const { liquidSyntaxToTwig } = require("./gulp/LiquidSyntaxToTwig");
 const watch = require("node-watch");
+const { v4 } = require('uuid');
 
 const isDev = process.env.NODE_ENV === "development";
 const config = {
@@ -77,7 +78,7 @@ function compileLiquidToTwig() {
     if (file.includes(".liquid")) {
       const twigFileName = file.replace(/\.liquid/g, ".twig");
       let content = fs.readFileSync(file).toString();
-      content = getTwig("id", content, {});
+      content = getTwig(`id_${v4()}`, content, {});
       content = liquidSyntaxToTwig({
         liquid: content,
         settings: [],
